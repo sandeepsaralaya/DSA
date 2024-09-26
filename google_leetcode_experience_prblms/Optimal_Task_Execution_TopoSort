@@ -1,0 +1,106 @@
+
+Problem : 
+You want to run two tests on a device. Each test has a series of setup tests that must be done in order.
+For example,
+you need to complete Step A, B, and C in that order to run test1.
+Then there is test2, which needs steps X, B, and Z to be setup in that order to run.
+You could setup the device by doing the steps like this A, B, C, X, B Z. But that would be inefficient because you are doing step B twice. How would you make the list of steps such that there are no duplicate steps but the order of the steps is maintained. For example, in this case, the optimized correct steps are A, X, B, C,Z.
+
+
+//Ask clarifying question 
+
+1) will these steps in order can have any kind of cycle dependency , i.e A ,B,C and X,B,A  in one test A is before B and in other A is after B 
+assuming no 
+
+2) will der nly be 2 tests or can der be more ? 
+for now lets assume 2 but should be expandable 
+
+can i take i/p if format of List<Strings> where each String represents order of test with comma seperated? s
+
+// My intution 
+since we r dealing with ordering and need an efficient ordering so that one task is processed or executed once , i can think of these tasks graph nodes which should be processed once
+and ordering is and direct edge . so basically i need to construct a directed graph and if  i generate a topo sort sequence that wopuld be my o/p as it will maintain order as well as one node will be processed n ly once.
+
+i.e if ordering is A,B,C den der is 3 nodes A,B,C with directed edge as follows A->B->C.
+
+for above ex :
+we get 
+graph as
+A,X->B
+B->C,Z
+
+pseduo code: 
+CONSTRUCT GRAPH 
+FOR each string : 
+    map{char,list<char>}
+    if(char not der den add , and i+1 char as its edge) 
+do  toposort of this char starting from any char . 
+
+do toposort from any char which is not in visited set .
+maintain a stack to store toposort , i.e add task once all its child finished .
+
+
+//code
+class Solution
+{
+
+    public String findOptimalTaskExecution(List<String> testOrder)
+    {
+          HashMap<Character,List<Character>> graph=constructGraph(testOrder);
+          HashSet<String> processedTasks=new HashSet<>();
+          Stack<Character> taskOrderedStack=new Stack<>();
+          for(Char task:graph.keySet())
+          {
+             if(!processedTasks.contains(taks))
+                  processTask(graph,processedTasks,task,taskOrderedStack);
+          }
+          StringBuilder taskOptimalExecutionOrder=new StringBUilder();
+          while(!taskOrderedStack.isEmpty())
+          {
+              taskOptimalExecutionOrder.append(taskOrderedStack.pop()+"");
+          }
+          return taskOptimalExecutionOrder.join(",").toString();
+    }
+
+    private void processTask(HashMap<Character,List<Character>> graph,  HashSet<String> processedTasks,char task,Stack<Character> taskOrderedStack)
+    {
+         processedTasks.add(task);
+        List<Character> edges=graph.get(task);
+        for(Character adjTask:edges)
+        {
+            if(processedTasks.contains(AdjTask)
+              continue;
+            processTask(graph,processTask,adjTask,taskOrderedStack);
+        }
+        taskOrderedStack.push(task);
+    }
+
+    private HashMap<Character,List<Character>>  constructGraph(List<String> testOrder)
+    {
+        HashMap<Character,List<Character>> graph=new HashMap<>();
+        for(String test:testOrder)
+        {
+              char[] testTaskArr=test.split(",");
+              for(int i=0;i<testTaskArr.length;i++)
+              {
+                  char curTask=testTaskArr[i];
+                  graph.putIfAbsent(curTask,new ArrayList<>());
+                  if(i!=testTaskArr.length-1)
+                  {
+                      List<Character> adjTasks=graph.get(curTask);
+                      adjTasks.add(testTaskArr[i+1]);
+                  }
+              }
+        }
+        return graph;
+    }
+
+}
+
+
+// TC: 
+    For building graph : nm , where n is total no of tests + m is tasks inside a test 
+    let v be total no unique of task 
+    for toposort ev
+    nm+mv+m
+
