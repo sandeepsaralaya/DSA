@@ -1,0 +1,144 @@
+implement restaurant waitlist api and datastructure
+we are hired by a restaurant. they want us to create a waitlist for tables when people show up.
+3 requirements:
+
+a party of customers can join the waitlist, assume it to be reasonable limit of n people
+a party which has joined the waitlist can also leave the waitlist at any time
+when a table becomes free, the restaurant serves the first party of waitlist with the size available
+for example: a party of 4 can join a table of 6 if they are first in waitlist
+a party of 8 doesnot fit at a table of size 6
+for now just assume we assume this is one restaurant
+create an API in java to fullfill these requirements, then implement the methods
+
+google
+screen-round
+ds used:
+dll and hashmap similar to lru
+classes : 
+Table 
+WaitingParty
+RestaurantSytem
+IWaitngPartyTableMappingStrategy // for extensibility
+DefaultWaitngPartyTableMappingStrategy
+............................................................
+
+class Table
+{
+  private String tableId;
+  private Integer tableCapacity;
+  private boolean isOccupied;
+  private WaitingParty occupiedBy;
+  // getters and setters
+}
+
+class WaitingParty
+{
+   private String id;
+   private Integer noOfCustomer;
+   private WaitingParty nextWaitingParty;
+   private WaitingParty prevWaitingParty;
+   private Boolean isTableAllocated; 
+
+  public WaitingParty(int noOfCustomer)
+  {
+    id=uuid;
+    this.noOfCustomer=noOfCustomer;
+    isTableAllocated=false;
+  }
+
+  // getters and setters 
+
+  public void leaveFromQueue()
+  {
+     if(this.nextWaitingParty!=null)
+          nextWaitingParty.prevWaitingParty=this.prevWaitingParty;
+     if(this.prevWaitingParty!=null)
+          prevWaitingParty.nextWaitingParty=this.nextWaitingParty;
+     this.nextWaitingParty=null;
+     this.prevWaitingParty=null;
+  }
+
+  public void allocateTable()
+  {
+    this.isTableAllocated=true;
+    leaveFromQueue();
+  }
+}
+
+class RestaurantWaitingSystem
+{
+    HashMap<String,Table> tableMap;
+    HashMap<String,WaitingParty> waitingPartyLookUp;
+    WaitingParty dummyStart;
+    WaitingParty dummyTail;
+    IWaitngPartyTableMappingStrategy iWaitngPartyTableMappingStrategy;
+   public RestaurantWaitingSystem(IWaitngPartyTableMappingStrategy iWaitngPartyTableMappingStrategy)
+   {
+       this.tableMap=new HashMap<>();
+       this.waitingPartyLookUp=new HashMap<>();
+       this.dummyStart=new WaitingParty(-1);
+       this.dummyTail=new WaitingParty(-1);
+       this.dummyStart.setNext(this.dummyTail);
+       this.dummyTail.setPrev(this.dummyStart);
+       this.iWaitngPartyTableMappingStrategy=iWaitngPartyTableMappingStrategy;
+   }
+
+    public void addTable(Table table);
+
+    public add partyToWaitingList(int noOfPeople)
+    {
+        WaitingParty newNode=new WaitingParty(noOfPeople);
+        WaitingParty curLast=this.dummyStart.nextWaitingParty;
+        curLast.setPrev(newNode);
+        newNode.setNext(curLast);
+        dummyStart.setNext(newNode);
+        newNode.setPrev(dummyStart);
+        waitingPartyLookUp.add(newNode.getId(),newNode);
+    }
+
+    public WaitingParty allocateWaitingPartyToTable(String tableId)
+    {
+       Table table= tableMap.getOrDefault(tableId,null);
+        if(table==null||table.isOccupied)
+            syso("invalid table");
+        WaitingParty party=iWaitngPartyTableMappingStrategy.getWaitingParty(table.capacity,dummyStart,dummyTail);
+        if(party==null)
+            syso "no suitable party found"
+        party.allocateTable();
+        table.setIsOccupied(true);
+        table.setCurrentDiningPart(party);
+        waitingPartyLookUp.remove(party.getId());
+        return party;
+    }
+
+    public void leaveWaitingList(String waitingPartyId)
+    {
+          if(!waitingPartyLookUp.containsKey(waitingPartyId))    
+                  syso invalid party;
+          WaitingParty party=waitingPartyLookUp.get(waitingPartyId);
+          party.leaveFromQueue();
+         waitingPartyLookUp.remove(party.getId());
+    }
+     
+}
+
+Interface IWaitngPartyTableMappingStrategy
+{
+    WaitingParty getWaitingParty(int tableCapacity,WaitingParty start,WaitingParty end);
+}
+
+class DefaultWaitngPartyTableMappingStrategy implements IWaitngPartyTableMappingStrategy
+{
+    @Override
+    public WaitingParty getWaitingParty(int tableCapacity,WaitingParty start,WaitingParty end)
+    {
+      WaitingParty cur =end.prevWaitingParty;
+      while(cur!=null && cur!=start)
+      {
+          if(cur.noOfCustomer<=tableCapacity)
+            return cur;
+          cur=cur.prevWaitingParty;
+      }
+      return null;
+    }
+}
