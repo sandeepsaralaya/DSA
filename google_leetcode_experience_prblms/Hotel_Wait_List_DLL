@@ -85,7 +85,7 @@ class RestaurantWaitingSystem
 
     public void addTable(Table table);
 
-    public add partyToWaitingList(int noOfPeople)
+    public addpartyToWaitingList(int noOfPeople)
     {
         WaitingParty newNode=new WaitingParty(noOfPeople);
         WaitingParty curLast=this.dummyStart.nextWaitingParty;
